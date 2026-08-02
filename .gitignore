@@ -2,3 +2,6 @@ out
 .env
 learn-cicd-starter
 notely
+ci-cd
+.idea
+#README.md
