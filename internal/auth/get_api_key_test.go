@@ -15,7 +15,7 @@ func Test_GetAPIKey_NoHeader(t *testing.T) {
 	_, actualError := GetAPIKey(emptyHeader)
 
 	// assert
-	if expectedError == actualError {
+	if expectedError != actualError {
 		t.Errorf("GetAPIKey returned an unexpected error.")
 	}
 
