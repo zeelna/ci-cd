@@ -22,7 +22,7 @@ jobs:
         run: ./scripts/buildprod.sh
 
       - name: Build the app Docker image locally
-        run: docker build -t frkirc/notely:latest . --platform=linux/arm64
+        run: docker build -t frkirc/notely:latest .
 
       - name: Run the app via Docker image locally
         run: docker run -e PORT=8080 -p 8080:8080 frkirc/notely:latest
