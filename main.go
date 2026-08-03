@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
+	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
@@ -20,6 +22,13 @@ import (
 type apiConfig struct {
 	DB *database.Queries
 }
+
+/*
+func unused() {
+	// this function does nothing
+	// and is called nowhere
+}
+*/
 
 //go:embed static/*
 var staticFiles embed.FS
@@ -89,10 +98,20 @@ func main() {
 
 	router.Mount("/v1", v1Router)
 	srv := &http.Server{
-		Addr:    ":" + port,
-		Handler: router,
+		Addr:              ":" + port,
+		Handler:           router,
+		ReadHeaderTimeout: 5 * time.Second,
+		// Recommended (optional)
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
 	}
 
-	log.Printf("Serving on port: %s\n", port)
+	// added solution to resolve: G706 (CWE-117): Log injection via taint analysis (Confidence: HIGH, Severity: LOW)
+	sanitizedPortValue, err := strconv.Atoi(port)
+	if err != nil || sanitizedPortValue < 1 || sanitizedPortValue > 65535 {
+		log.Fatal("invalid port")
+	}
+
+	log.Printf("Serving on port: %d\n", sanitizedPortValue)
 	log.Fatal(srv.ListenAndServe())
 }
