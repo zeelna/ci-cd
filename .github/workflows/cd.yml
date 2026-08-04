@@ -9,6 +9,10 @@ jobs:
     name: Deploy
     runs-on: ubuntu-latest
 
+    # secrets. reside in GitHub Actions
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
     steps:
       - name: Check out code
         uses: actions/checkout@v6
@@ -28,8 +32,15 @@ jobs:
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v3'
 
+      - name: 'Install Goose to enable database migrations features'
+        run: go install github.com/pressly/goose/v3/cmd/goose@latest
+
       - name: 'Build Docker image and push it to Artifact Registry in Google Cloud Platform'
-        run: 'gcloud builds submit --tag us-central1-docker.pkg.dev/notely-504508/notely-ar-repo/notely:latest . '
+        run: gcloud builds submit --tag us-central1-docker.pkg.dev/notely-504508/notely-ar-repo/notely:latest .
+
+      - name: 'Run database migrations script (after bulding Docker image, but before deployment of image'
+        run: ./scripts/migrateup.sh
 
       - name: Deploy to Cloud Run
         run: gcloud run deploy notely --image us-central1-docker.pkg.dev/notely-504508/notely-ar-repo/notely:latest --region us-central1 --allow-unauthenticated --project notely-504508 --max-instances=4
+
